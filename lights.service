@@ -1,0 +1,12 @@
+[Unit]
+Description=WS2811 Lights
+Requires=network-online.target
+
+[Service]
+user=root
+WorkingDirectory=/home/pi
+ExecStart=/usr/bin/python lights.py> /dev/null 2>&1 < /dev/null
+
+[Install]
+WantedBy=multi-user.target
+

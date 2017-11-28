@@ -1,0 +1,220 @@
+import time
+import os
+
+RED = [128,0,0]
+ORANGE = [100,16,0]
+YELLOW = [128,64,0]
+GREEN = [0,128,0]
+AQUA = [0,64,16]
+BLUE = [0,0,128]
+PURPLE = [64,0,64]
+WHITE = [140,140,140]
+DIM_WHITE = [64,64,64]
+BLACK = [0,0,0]
+
+default_colors = [
+  RED,
+  ORANGE,
+  YELLOW,
+  GREEN,
+  AQUA,
+  BLUE,
+  PURPLE
+]
+
+Colors = default_colors
+
+def chase(np, c, d):
+    for i in range(c * np.n):
+        np.fill([0, 0, 0])
+        np[i % np.n] = (255, 255, 255)
+        np.write()
+        time.sleep_ms(d)
+
+def load_random_colors():
+    global Colors
+    Colors = []
+    num_colors = len(default_colors)
+    t = list(default_colors)
+    for i in range(0,num_colors):
+        j = int.from_bytes(os.urandom(4),'little') % len(t)
+        Colors.append(t[j])
+        t.remove(t[j])
+
+def colors_up(np, t):
+    time.sleep(1)
+    for i in range(0,np.n):
+        np[i] = [150,150,150]
+        if (i > 0):
+            np[i - 1] = Colors[(i - 1) % 7]
+        np.write()
+        time.sleep_ms(t)
+
+def colors_down(np, t):
+    time.sleep(1)
+    for i in range((np.n - 1),0,-1):
+        np[i] = [150,150,150]
+        if (i < (np.n-1)):
+            np[i + 1] = [0,0,0]
+        np.write()
+        time.sleep_ms(t)
+    np.fill([0,0,0])
+    np.write()
+
+def colors(np):
+    for i in range(0,np.n):
+         np[i] = Colors[i % 7]
+    np.write()
+    count = 0
+
+def rainbow_up(np, t, d):
+    np.fill([0,0,0])
+    np.write()
+    time.sleep_ms(d)
+    for i in range(0,len(default_colors)):
+       for j in range(0,np.n):
+           np[j] = [240,240,240]
+           if (j > 0):
+               np[j - 1] = default_colors[i]
+           np.write()
+           time.sleep_ms(t)
+       np[np.n - 1] = default_colors[i]
+       np.write()
+       time.sleep_ms(d)
+
+def alternate(np,a,b,t):
+    np.fill([0,0,0])
+    np.write()
+    for i in range(0,np.n,2):
+        np[i] = a
+        np.write()
+        time.sleep_ms(t)
+   
+    for i in range(1,np.n,2):
+        np[i] = b
+        np.write()
+        time.sleep_ms(t)
+
+def bounce(np,c,t):
+    for i in range(4 * np.n):
+        for j in range(np.n):
+            np[j] = c
+        if (i // np.n) % 2 == 0:
+            np[i % np.n] = (64,64,64)
+        else:
+            np[np.n - 1 - (i % np.n)] = (64,64,64)
+        np.write()
+        time.sleep_ms(t)
+
+def check(np, i):
+   if (i < 0):
+      return 0
+   if (i > (np.n - 1)):
+      return (np.n - 1)
+   return i
+
+def cycle(np,c,t):
+    for i in range(4 * np.n):
+        for j in range(np.n):
+            np[j] = (0, 0, 0)
+        np[i % np.n] = c
+        np.write()
+        time.sleep_ms(t)
+
+
+def explode_set(np,middle,r,i):
+   np[middle] = [i,i,i]
+   for k in range(1, r):
+      j = i - (k * 80)
+      if (j < 0):
+         j = 0
+      np[middle - k] = [j,j,j]
+      np[middle + k] = [j,j,j]
+   np.write()
+   time.sleep_ms(1)
+
+def explode(np):
+   middle = int(np.n / 2)
+   np.fill([0,0,0])
+   np.write()
+   time.sleep_ms(200)
+   for i in range(5, 256, 10):
+      explode_set(np,middle,4,i)
+   for i in range(255, 5, -10):
+      explode_set(np,middle,4,i)
+   np[middle] = [0,0,0]
+   np.write()
+
+def fade(np):
+    orig = np
+    val = ()
+    for i in range(0, 4 * 256, 8):
+        for j in range(0,np.n):
+            if (i // 256) % 2 == 0:
+                val = (i & orig[j][0])
+                val = val + (i & orig[j][1])
+                val = val + (i & orig[j][2])
+            else:
+                val = (255 - (i & orig[j][0]))
+                val = val + (255 - (i & orig[j][1]))
+                val = val + (255 - (i & orig[j][2]))
+            np[j] = val
+        np.write()
+
+
+def from_middle(np, color, t):
+   middle = int(np.n / 2)
+   np[middle] = color
+   np.write()
+   time.sleep_ms(t)
+   count = 1
+   while ((middle + count) <= np.n):
+      np[check(np,middle + count)] = color
+      np[check(np,middle - count)] = color
+      np.write()
+      time.sleep_ms(t)
+      count += 1
+
+def blink(np,c,t):
+    o = []
+    for i in range(0, np.n):
+        o.append(np[i])
+    for i in range(c):
+        np.fill([0,0,0])
+        np.write()
+        time.sleep_ms(t)
+        for i in range(0,np.n):
+            np[i] = o[i]
+        np.write()
+        time.sleep_ms(t)
+
+def random_flash(np, c):
+    count = 0
+    while(count < c):
+         i = int.from_bytes(os.urandom(4),'') % np.n
+         old = np[i]
+         np[i] = [255,255,255]
+         np.write()
+         time.sleep_ms(80)
+         np[i] = old
+         np.write()
+         time.sleep_ms(200 + (int.from_bytes(os.urandom(4),'') % 500))
+         count += 1
+
+def unalternate(np,t):
+    for i in range((np.n - 1),0,-2):
+        np[i] = [0,0,0]
+        np.write()
+        time.sleep_ms(t)
+
+    for i in range((np.n - 2),0,-2):
+        np[i] = [0,0,0]
+        np.write()
+        time.sleep_ms(t)
+    np.fill([0,0,0])
+    np.write()
+
+def solid(np, c):
+    np.fill(c)
+    np.write()
+
