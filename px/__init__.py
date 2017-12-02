@@ -21,12 +21,21 @@ default_colors = [
   GREEN,
   AQUA,
   BLUE,
-  PURPLE
+  PURPLE,
+  WARM_WHITE
 ]
 
 Colors = default_colors
 
 random.seed()
+
+def marquee(np, m, d):
+   l = len(m)
+   for j in range(0, l):
+      for i in range(0, np.numPixels()):
+         np.setPixelColor(i, m[((i + j) % l)])
+      np.show()
+      time.sleep(d / 1000.0)
 
 def load_solid(np, c):
     for i in range(0, np.numPixels()):
@@ -60,13 +69,14 @@ def load_random_colors():
 
 def colors_up(np, t):
     time.sleep(1)
+    nc = len(default_colors)
     for i in range(0,np.numPixels()):
         np.setPixelColor(i, WHITE)
         if (i > 0):
-            np.setPixelColor(i - 1, Colors[(i - 1) % 7])
+            np.setPixelColor(i - 1, Colors[(i - 1) % nc])
         np.show()
         time.sleep(t / 1000.0)
-    np.setPixelColor(i, Colors[i % 7])
+    np.setPixelColor(i, Colors[i % nc])
     np.show()
 
 def colors_down(np, t):
@@ -81,8 +91,9 @@ def colors_down(np, t):
     np.show()
 
 def colors(np):
+    nc = len(default_colors)
     for i in range(0,np.numPixels()):
-         np.setPixelColor(i, Colors[i % 7])
+         np.setPixelColor(i, Colors[i % nc])
     np.show()
 
 def random_flash(np, c):
