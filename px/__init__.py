@@ -46,11 +46,11 @@ def solid(np, c):
         np.setPixelColor(i, c)
     np.show()
 
-def chase(np, c, d):
+def chase(np, c, d, clr):
     for i in range(c * np.numPixels()):
         for j in range(0, np.numPixels()):
             np.setPixelColor(j, BLACK)
-        np.setPixelColor(i % np.numPixels(), Color(255,255,255))
+        np.setPixelColor(i % np.numPixels(), clr)
         np.show()
         time.sleep(d / 1000.0)
     np.setPixelColor(np.numPixels() - 1, BLACK)
